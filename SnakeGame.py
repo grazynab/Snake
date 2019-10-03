@@ -9,14 +9,15 @@ class SnakeGame(object):
         self.board = Board()
 
     def startGame(self):
-        #print("Direct the snake towards the food using arrows."
-            #"\nWatch out, don't hit the walls or bite your own body.\nGood luck!")
-
+        self.board.printStartMessage()
         while self.gameState == GameState.IN_PROGRESS:
-            self.board.snakeMovement()
-            self.board.chooseDirection()
-            # self.board.checkGameState()
-
+            self.board.makeMove()
+            if self.board.food.y == int(self.board.snake.y[0]) and self.board.food.x == int(self.board.snake.x[0]):
+                self.board.snakeEatsFood()
+            self.gameState = self.board.checkGameState()
+        if self.gameState == GameState.OVER:
+            self.board.screen.clear()
+            self.board.printGameInfo()
 
 snake = SnakeGame()
 snake.startGame()

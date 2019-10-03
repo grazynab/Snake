@@ -15,11 +15,10 @@ class Board(object):
     def __init__(self):
         self.board = [[fieldOption.EMPTY for x in range(50)]] * 50
         self.screen = self.initScreen()
-        self.food = Coordinates(self.getRandomNumber(), self.getRandomNumber(), "*")
-        self.snake = Coordinates([3, 4, 5], [4, 4, 4], ["X", "X", "X"])
-        self.direction = Direction.RIGHT
-        self.appearFood()
-        self.appearSnake()
+        self.food = self.getNewFoodPosition()
+        self.snake = Coordinates([3, 3, 3], [3, 4, 5], ["X", "X", "X"])
+        self.direction = Direction.DOWN
+        self.score = 0
 
     def initScreen(self):
         os.environ["TERM"] = "linux"
@@ -29,12 +28,11 @@ class Board(object):
         curses.cbreak()
         stdscr.keypad(True)
         curs_set(False)
-        stdscr.border()
-        stdscr.timeout(5000)
-        stdscr.nodelay(1)
+        # stdscr.timeout(5000)
+        # stdscr.nodelay(1)
         return stdscr
 
-    def closeScreen(self):
+    def closeScreen(self):  # nigdzie tego nie użyłam
         curses.nocbreak()
         self.screen.keypad(False)
         curses.echo()
@@ -43,11 +41,16 @@ class Board(object):
     def getCharFromConsole(self):
         return self.screen.getch()
 
-    def getRandomNumber(self):
-        return random.randint(0, min(self.screen.getmaxyx()))
+    def getRandomY(self):
+        maxy = self.screen.getmaxyx()
+        return random.randint(1, maxy[0] - 2)
 
-    def newFoodPosition(self):
-        self.food = Coordinates(self.getRandomNumber(), self.getRandomNumber(), "*")
+    def getRandomX(self):
+        maxx = self.screen.getmaxyx()
+        return random.randint(1, maxx[1] - 1)
+
+    def getNewFoodPosition(self):
+        return Coordinates(self.getRandomX(), self.getRandomY(), "*")
 
     def appearFood(self):
         self.screen.addstr(self.food.y, self.food.x, self.food.shape)
@@ -56,84 +59,125 @@ class Board(object):
         for index, item in enumerate(self.snake.shape):
             self.screen.addstr(self.snake.y[index], self.snake.x[index], str(item))
 
-    def snakeMovement(self):
-        while self.direction == Direction.RIGHT:
-            self.moveRight()
-        while self.direction == Direction.LEFT:
-            self.moveLeft()
-        while self.direction == Direction.UP:
-            self.moveUp()
-        while self.direction == Direction.DOWN:
-            self.moveDown()
-
-
-        #że wąż sam idzie w aktywnym kierunku o pole (na x czasu?)
-
-    def chooseDirection(self):
-        #zmienić na wybór kierunku
+    def makeMove(self):
+        self.appearSnake() #nie jestem pewna, czy to powinno być tutaj
+        self.appearFood()
         char = self.getCharFromConsole()
         # print doesn't work with curses, use addstr instead
         # 1. poierz znak od gracza
         # 2. wprowadz zmiany w tablicy gry
         # 3. wyswietl tablice na konsoli
         self.screen.clear()
-        #self.printGameInfo()
+        self.screen.border()
         if char == ord('q'):
             self.screen.addstr(0, 0, 'quit game')
         elif char == curses.KEY_RIGHT:
-            if self.direction != Direction.LEFT:
-                self.direction = Direction.RIGHT
-            else:
-                pass
+            self.direction = Direction.RIGHT
+            self.moveRight()
+
         elif char == curses.KEY_LEFT:
-            if self.direction != Direction.RIGHT:
-                self.direction = Direction.LEFT
-            else:
-                pass
+            self.direction = Direction.LEFT
+            self.moveLeft()
 
         elif char == curses.KEY_UP:
-            if self.direction != Direction.DOWN:
-                self.direction = Direction.UP
-            else:
-                pass
+            self.direction = Direction.UP
+            self.moveUp()
 
         elif char == curses.KEY_DOWN:
-            if self.direction != Direction.UP:
-                self.direction = Direction.DOWN
-            else:
-                pass
+            self.direction = Direction.DOWN
+            self.moveDown()
 
-        #rusza się cały wąż góra dół - zmienić to
+        self.appearSnake()
+        self.printGameInfo()
 
     def moveRight(self):
-    # for index, item in enumerate(self.snake.shape):
-      #      self.screen.addstr(self.snake.y[index], self.snake.x[index] + 1, str(item))
-        self.snake.x = [x + 1 for x in self.snake.x]
-        self.appearSnake()
+        if self.direction != Direction.LEFT:
+            self.snake.y.insert(0, self.snake.y[0])
+            self.snake.x.insert(0, self.snake.x[0] + 1)
+            del self.snake.y[-1]
+            del self.snake.x[-1]
+        else:
+            pass
 
     def moveLeft(self):
-        for index, item in enumerate(self.snake.shape):
-            self.screen.addstr(self.snake.y[index], self.snake.x[index] - 1, str(item))
-        self.snake.x = [x - 1 for x in self.snake.x]
+        if self.direction != Direction.RIGHT:
+            self.snake.y.insert(0, self.snake.y[0])
+            self.snake.x.insert(0, self.snake.x[0] - 1)
+            del self.snake.y[-1]
+            del self.snake.x[-1]
+        else:
+            pass
 
     def moveUp(self):
-        for index, item in enumerate(self.snake.shape):
-            self.screen.addstr(self.snake.y[index] - 1, self.snake.x[index], str(item))
-        self.snake.y = [y + 1 for y in self.snake.y]
+        if self.direction != Direction.DOWN:
+            self.snake.y.insert(0, self.snake.y[0] - 1)
+            self.snake.x.insert(0, self.snake.x[0])
+            del self.snake.y[-1]
+            del self.snake.x[-1]
+        else:
+            pass
 
     def moveDown(self):
-        for index, item in enumerate(self.snake.shape):
-            self.screen.addstr(self.snake.y[index] + 1, self.snake.x[index], str(item))
-        self.snake.y = [y - 1 for y in self.snake.y]
+        if self.direction != Direction.UP:
+            del self.snake.y[-1]
+            del self.snake.x[-1]
+            self.snake.y.insert(0, self.snake.y[0] + 1)
+            self.snake.x.insert(0, self.snake.x[0])
+        else:
+            pass
+
+    def snakeEatsFood(self):
+        self.snake.shape.append("X")
+        if self.direction == Direction.LEFT:
+            self.snake.x.append(self.snake.x[-1] + 1)
+            self.snake.y.append(self.snake.y[-1])
+        elif self.direction == Direction.RIGHT:
+            self.snake.x.append(self.snake.x[-1] - 1)
+            self.snake.y.append(self.snake.y[-1])
+        elif self.direction == Direction.UP:
+            self.snake.x.append(self.snake.x[-1])
+            self.snake.y.append(self.snake.y[-1] + 1)
+        elif self.direction == Direction.DOWN:
+            self.snake.x.append(self.snake.x[-1])
+            self.snake.y.append(self.snake.y[-1] - 1)
+        self.food = self.getNewFoodPosition()
+        self.appearFood()
+        self.score += 1
 
     def printGameInfo(self):
-        self.screen.addstr(0, 0, "Screensize: " + str(self.screen.getmaxyx()))
-    #
-    # def checkGameState(self):
-    #     if Snake.hitWall():
-    #         return GameState.OVER
-    #     elif Snake.hitSnake():
-    #         return GameState.OVER
-    #     else:
-    #         return GameState.IN_PROGRESS
-    #
+        self.screen.addstr(0, 150, "Score: " + str(self.score))
+        # self.screen.addstr(0, 150, "Screensize: " + str(self.screen.getmaxyx())) #13 x 168
+
+    def snakeHitsWall(self):
+        maxyx = self.screen.getmaxyx()
+        if self.snake.x[0] == maxyx[1]:
+            return True
+        elif self.snake.x[0] == 0:
+            return True
+        elif self.snake.y[0] == maxyx[0] - 1:
+            return True
+        elif self.snake.y[0] == 0:
+            return True
+        else:
+            return False
+
+    def snakeHitsItself(self):
+        for y, x in zip(self.snake.y[1:], self.snake.x[1:]):
+            if y == self.snake.y[0] and x == self.snake.x[0]:
+                return True
+
+    def checkGameState(self):
+        if self.snakeHitsWall():
+            return GameState.OVER
+        elif self.snakeHitsItself():
+            return GameState.OVER
+        else:
+            return GameState.IN_PROGRESS
+
+    def printStartMessage(self):
+        self.screen.addstr(1, 1, "Direct the snake towards the food using arrows."
+                                 "\nWatch out, don't hit the walls or bite your own body."
+                                 "\nGood luck!")
+
+    def printGameOverMessage(self):
+        self.screen.addstr(5, 5, "GAME OVER! Your score is " + str(self.score))
