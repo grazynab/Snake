@@ -75,7 +75,7 @@ class Board(object):
             self.snake.y.append(self.snake.y[-1] - 1)
 
     def snakeHitsWall(self, maxyx):
-        if self.snake.x[0] == maxyx[1]:
+        if self.snake.x[0] == maxyx[1] - 1:
             return True
         elif self.snake.x[0] == 0:
             return True

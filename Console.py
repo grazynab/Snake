@@ -54,7 +54,7 @@ class Console(object):
 
     def getRandomX(self):
         maxx = self.screen.getmaxyx()
-        return random.randint(1, maxx[1] - 1)
+        return random.randint(1, maxx[1] - 2)
 
     def appearFood(self, food):
         self.screen.addstr(food.y, food.x, food.shape)
@@ -66,10 +66,3 @@ class Console(object):
     def printGameInfo(self, score):
         self.screen.addstr(0, 150, "Score: " + str(score))
 
-    def printStartMessage(self):
-        self.screen.addstr(1, 1, "Direct the snake towards the food using arrows."
-                                 "\nWatch out, don't hit the walls or bite your own body."
-                                 "\nGood luck!")
-
-    def printGameOverMessage(self, score):
-        self.screen.addstr(5, 5, "GAME OVER! Your score is " + str(score))

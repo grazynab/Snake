@@ -1,6 +1,7 @@
 from Board import Board
 from Console import Console
 from GameState import GameState
+from time import sleep
 
 
 class SnakeGame(object):
@@ -11,7 +12,10 @@ class SnakeGame(object):
         self.console = Console()
 
     def startGame(self):
-        self.console.printStartMessage()
+        print("\n\nDirect the snake towards the food using arrows."
+              "\nWatch out, don't hit the walls or bite your own body."
+              "\nGood luck!");
+        sleep(6)
         while self.gameState == GameState.IN_PROGRESS:
             previousdir = self.board.direction
             self.board.direction = self.console.getMove()
@@ -29,8 +33,8 @@ class SnakeGame(object):
             self.gameState = self.checkGameState()
         if self.gameState == GameState.OVER:
             self.console.screen.clear()
-            self.console.printGameOverMessage(self.board.score)
             self.console.closeScreen()
+            print(">>> GAME OVER! Your score is " + str(self.board.score) + "<<<")
 
     def checkGameState(self):
         if self.board.snakeHitsWall(self.console.screen.getmaxyx()):
@@ -40,6 +44,6 @@ class SnakeGame(object):
         else:
             return GameState.IN_PROGRESS
 
+
 snake = SnakeGame()
 snake.startGame()
-
