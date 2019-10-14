@@ -28,14 +28,18 @@ class Console(object):
         curses.echo()
         curses.endwin()
 
+    def clearScreen(self):
+        self.screen.clear()
+
     def getCharFromConsole(self):
         return self.screen.getch()
 
+    def prepareScreenForNextMove(self):
+        self.screen.clear()
+        self.screen.border()
+
     def getMove(self):
         key = self.getCharFromConsole()
-        self.screen.clear() #?
-        self.screen.border() #?
-
         if key == curses.KEY_RIGHT:
             return Direction.RIGHT
 
@@ -56,13 +60,17 @@ class Console(object):
         maxx = self.screen.getmaxyx()
         return random.randint(1, maxx[1] - 2)
 
-    def appearFood(self, food):
+    def getMaxScreenSize(self):
+        return self.screen.getmaxyx()
+
+    def printFood(self, food):
         self.screen.addstr(food.y, food.x, food.shape)
 
-    def appearSnake(self, snake):
+    def printSnake(self, snake):
         for index, item in enumerate(snake.shape):
             self.screen.addstr(snake.y[index], snake.x[index], str(item))
 
     def printGameInfo(self, score):
         self.screen.addstr(0, 150, "Score: " + str(score))
+
 

@@ -10,6 +10,14 @@ class Board(object):
         self.direction = Direction.DOWN
         self.score = 0
 
+    @property
+    def score(self):
+        return self.__score
+
+    @score.setter
+    def score(self, score):
+        self.__score = score
+
     def isMoveValid(self, currentdir, previousdir):
         if currentdir == Direction.DOWN and previousdir == Direction.UP:
             return False
@@ -56,10 +64,10 @@ class Board(object):
         self.snake.y.insert(0, self.snake.y[0] + 1)
         self.snake.x.insert(0, self.snake.x[0])
 
-    def getNewFoodPosition(self, x, y):
+    def setNewRandomFoodPosition(self, x, y):
         return Coordinates(x, y, "*")
 
-    def snakeGrows(self):
+    def growSnake(self):
         self.snake.shape.append("X")
         if self.direction == Direction.LEFT:
             self.snake.x.append(self.snake.x[-1] + 1)
@@ -74,7 +82,15 @@ class Board(object):
             self.snake.x.append(self.snake.x[-1])
             self.snake.y.append(self.snake.y[-1] - 1)
 
-    def snakeHitsWall(self, maxyx):
+    def makeSnakeEatFood(self, x, y):
+        self.growSnake()
+        self.food = self.setNewRandomFoodPosition(x, y)
+        self.score += 1
+
+    def isSnakeOnFood(self):
+        return self.food.y == int(self.snake.y[0]) and self.food.x == int(self.snake.x[0])
+
+    def doesSnakeHitWall(self, maxyx):
         if self.snake.x[0] == maxyx[1] - 1:
             return True
         elif self.snake.x[0] == 0:
@@ -84,7 +100,8 @@ class Board(object):
         elif self.snake.y[0] == 0:
             return True
 
-    def snakeHitsItself(self):
+    def doesSnakeHitItself(self):
         for y, x in zip(self.snake.y[1:], self.snake.x[1:]):
             if y == self.snake.y[0] and x == self.snake.x[0]:
                 return True
+

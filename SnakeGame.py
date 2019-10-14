@@ -4,7 +4,7 @@ from GameState import GameState
 from time import sleep
 
 
-class SnakeGame(object):
+class SnakeGame:
 
     def __init__(self):
         self.gameState = GameState.IN_PROGRESS
@@ -18,28 +18,29 @@ class SnakeGame(object):
         sleep(6)
         while self.gameState == GameState.IN_PROGRESS:
             previousdir = self.board.direction
+            self.console.prepareScreenForNextMove()
             self.board.direction = self.console.getMove()
-            self.console.appearSnake(self.board.snake)
-            self.console.appearFood(self.board.food)
+            self.console.printSnake(self.board.snake)
+            self.console.printFood(self.board.food)
             if self.board.isMoveValid(self.board.direction, previousdir):
                 self.board.makeMove()
-            self.console.appearSnake(self.board.snake)
+            self.console.printSnake(self.board.snake)
             self.console.printGameInfo(self.board.score)
-            if self.board.food.y == int(self.board.snake.y[0]) and self.board.food.x == int(self.board.snake.x[0]):
-                self.board.snakeGrows()
-                self.board.food = self.board.getNewFoodPosition(self.console.getRandomX(), self.console.getRandomY())
-                self.console.appearFood(self.board.food)
+            if self.board.isSnakeOnFood():
+                self.board.growSnake()
+                self.board.food = self.board.setNewRandomFoodPosition(self.console.getRandomX(), self.console.getRandomY())
+                self.console.printFood(self.board.food)
                 self.board.score += 1
             self.gameState = self.checkGameState()
         if self.gameState == GameState.OVER:
-            self.console.screen.clear()
+            self.console.clearScreen()
             self.console.closeScreen()
             print(">>> GAME OVER! Your score is " + str(self.board.score) + "<<<")
 
     def checkGameState(self):
-        if self.board.snakeHitsWall(self.console.screen.getmaxyx()):
+        if self.board.doesSnakeHitWall(self.console.getMaxScreenSize()):
             return GameState.OVER
-        elif self.board.snakeHitsItself():
+        elif self.board.doesSnakeHitItself():
             return GameState.OVER
         else:
             return GameState.IN_PROGRESS
